@@ -10,18 +10,18 @@ MINX = MINY = -0.5
 MAX_X = MAX_Y = 5
 
 if "df" not in state:
-     df = pd.DataFrame({
-     'X': [*[0]*(9)],
-     'Y': [*[0]*(9)],
-     'Sinal': [*['>=']*(9)],
-     'Valor': [*[0]*(9)]
-     })
+     # df = pd.DataFrame({
+     # 'X': [*[0]*(9)],
+     # 'Y': [*[0]*(9)],
+     # 'Sinal': [*['>=']*(9)],
+     # 'Valor': [*[0]*(9)]
+     # })
      # Criando o DataFrame com as restrições
      df = pd.DataFrame({
-          'X': [ 1, -5, 3, 0, 0, 0],  # Coeficientes de x
-          'Y': [ 2, 5, 5, 0, 0, 0],   # Coeficientes de y
-          'Sinal': ['>=', '<=', '>=', '>=', '>=', '>='],  
-          'Valor': [1,-10, 15, 0, 0, 0] # Valores das restrições
+          'X': [ 1, -5, 3],  # Coeficientes de x
+          'Y': [ 2, 5, 5],   # Coeficientes de y
+          'Sinal': ['>=', '<=', '>='],  
+          'Valor': [1,-10, 15] # Valores das restrições
      })
      state.df = df
 
