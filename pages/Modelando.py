@@ -49,16 +49,16 @@ def set_const():
 st.subheader("Declare aqui sua função objetivo e suas variáveis")
 
 # Exibição do DataFrame editável
-fo = st.columns([5,2,2,2,2,2,2])
+fo = st.columns([5,2,2])
 fo[0].selectbox('Função Objetivo:',['Maximizar', 'Minimizar'], key='opt')
-fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal', disabled=True)
-fo[2].number_input(key='x',label='x',label_visibility='hidden', min_value=0)
-fo[3].text_input('X', label_visibility='hidden',value='X', disabled=True)
-fo[4].selectbox('F:',['+', '-'],label_visibility='hidden', key='y_signal', disabled=True)
-fo[5].number_input(key='y',label='y',label_visibility='hidden', min_value=0)
-fo[6].text_input('Y', label_visibility='hidden',value='Y', disabled=True )
-function = f"{state.x_signal} {state.x} x " if state.x else ''
-function += f"{state.y_signal} {state.y} y" if state.y else ''
+# fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal', disabled=True)
+fo[1].number_input(key='x',label='Multiplicador do x', min_value=0, value = 1)
+# fo[3].text_input('X', label_visibility='hidden',value='X', disabled=True)
+# fo[4].selectbox('F:',['+', '-'],label_visibility='hidden', key='y_signal', disabled=True)
+fo[2].number_input(key='y',label='Multiplicador do y', min_value=0, value = 1)
+# fo[6].text_input('Y', label_visibility='hidden',value='Y', disabled=True )
+function = f"{state.x} x " if state.x else ''
+function += f"{'+' if state.x else ''} {state.y} y" if state.y else ''
 st.write(f"**Função Objetivo:** {state.opt} {function}")
 st.number_input(
      label="Quantidade de restrições:",
