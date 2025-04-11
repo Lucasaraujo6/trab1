@@ -21,7 +21,7 @@ if "df" not in state:
           'X': [ 1, -5, 3, 0, 0, 0],  # Coeficientes de x
           'Y': [ 2, 5, 5, 0, 0, 0],   # Coeficientes de y
           'Sinal': ['>=', '<=', '>=', '>=', '>=', '>='],  
-          'Valor': ['1','-10', '15', '0', '0', '0'] # Valores das restrições
+          'Valor': [1,-10, 15, 0, 0, 0] # Valores das restrições
      })
      state.df = df
 
