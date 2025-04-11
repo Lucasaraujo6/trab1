@@ -50,7 +50,7 @@ st.subheader("Declare aqui sua função objetivo e suas variáveis")
 
 # Exibição do DataFrame editável
 fo = st.columns([5,2,2])
-fo[0].selectbox('Função Objetivo:',['Maximizar', 'Minimizar'], key='opt')
+fo[0].selectbox('Objetivo:',['Minimizar', 'Maximizar'], key='opt')
 # fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal', disabled=True)
 fo[1].number_input(key='x',label='Multiplicador do x', min_value=0, value = 1)
 # fo[3].text_input('X', label_visibility='hidden',value='X', disabled=True)
