@@ -4,14 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import ConvexHull
 
+
 state = st.session_state
+MINX = MINY = -1
+MAX_X = MAX_Y = 5
 
 if "df" not in state:
      df = pd.DataFrame({
      'X': [*[0]*(9)],
      'Y': [*[0]*(9)],
      'Sinal': [*['>=']*(9)],
-     'Valor': [*['0']*(9)]
+     'Valor': [*[0]*(9)]
      })
      # Criando o DataFrame com as restrições
      df = pd.DataFrame({
@@ -86,7 +89,16 @@ y = np.linspace(-10, 10, 200)
 X, Y = np.meshgrid(x, y)
 
 # Plotar as restrições
-df = state.tempdf
+df = state.tempdf.copy()
+new_rows = pd.DataFrame({
+     'X': [1, 0, 1, 0],
+     'Y': [0, 1, 0, 1],
+     'Sinal': ['>=','>=','<=','<='],
+     'Valor': [0, 0, MAX_X, MAX_Y]
+})
+
+df = pd.concat([df, new_rows], ignore_index=True)
+print('df',df)
 cores = ['b', 'g', 'r', 'c', 'm']
 # Converter as colunas para tipos numéricos
 df["Valor"] = pd.to_numeric(df["Valor"], errors="coerce")
@@ -118,33 +130,34 @@ for i, row in df.iloc[:].iterrows():
 intersection_points = []
 for i in range(len(df)):
      for j in range(i + 1, len(df)):
-          ponto = intersection(df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], 
+          point = intersection(df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], 
                               df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
-          if ponto is not None:
-               intersection_points.append(ponto)
+          if point is not None:
+               intersection_points.append(point)
+               
                
 extreme_points = []
-print(intersection_points)
-for ponto in intersection_points:
+# print(intersection_points)
+for point in intersection_points:
      viavel = True  # Inicializamos a viabilidade como verdadeira para cada ponto
      for _, row in df.iterrows():
           # Verificamos se o ponto satisfaz cada restrição
           if row["Sinal"] == ">=":
-               if not (row["X"] * ponto[0] + row["Y"] * ponto[1] >= row["Valor"] - 1e-4):
+               if not (row["X"] * point[0] + row["Y"] * point[1] >= row["Valor"] - 1e-4):
                     viavel = False
                     break
           elif row["Sinal"] == "<=":
-               if not (row["X"] * ponto[0] + row["Y"] * ponto[1] <= row["Valor"] + 1e-4):
+               if not (row["X"] * point[0] + row["Y"] * point[1] <= row["Valor"] + 1e-4):
                     viavel = False
                     break
           elif row["Sinal"] == "==":
-               if not (row["X"] * ponto[0] + row["Y"] * ponto[1] == row["Valor"]):
+               if not (row["X"] * point[0] + row["Y"] * point[1] == row["Valor"]):
                     viavel = False
                     break
      
      # Apenas adicionamos o ponto se ele for viável
      if viavel:
-          extreme_points.append(ponto)
+          extreme_points.append(point)
 
      # Exibir os pontos extremos encontrados
      print("Pontos extremos:", extreme_points)
@@ -169,14 +182,16 @@ def get_point(point):
      return rounded
 
 # # Plotar pontos extremos
-for ponto in extreme_points:
-     ax.scatter(*ponto, color="black", zorder=3)
-     ax.text(ponto[0], ponto[1], f"({get_point(ponto[0])}, {get_point(ponto[1])})", fontsize=9)
+for point in extreme_points:
+     if point[0] == MAX_X or point[1] == MAX_Y:
+          continue
+     ax.scatter(*point, color="black", zorder=3)
+     ax.text(point[0], point[1], f"({get_point(point[0])}, {get_point(point[1])})", fontsize=9)
 # Adicione as retas associadas para ajudar a fechar a região
-for i, row in df.iterrows():
-     if row["Y"] != 0:  # Evitar divisões por zero
-          y_values = (row["Valor"] - row["X"] * x) / row["Y"]
-          ax.plot(x, y_values, linestyle="--", color="gray", label=f"Reta {i}")
+# for i, row in df.iterrows():
+#      if row["Y"] != 0:  # Evitar divisões por zero
+#           y_values = (row["Valor"] - row["X"] * x) / row["Y"]
+#           ax.plot(x, y_values, linestyle="--", color="gray", label=f"Reta {i}")
 
 # Quando há apenas dois pontos, trace a direção de escape
 if len(extreme_points) == 2:
@@ -200,7 +215,7 @@ import numpy as np
 
 # Garantir que os pontos extremos estão formatados como um array numpy
 extreme_points = np.array(extreme_points)
-
+print(extreme_points)
 # Calcular a ordem correta dos pontos usando ConvexHull
 if len(extreme_points) >= 3:  # Pelo menos 3 pontos são necessários para formar um polígono
      hull = ConvexHull(extreme_points)
@@ -250,8 +265,8 @@ if len(extreme_points) >= 3:  # Pelo menos 3 pontos são necessários para forma
 #           color="lightblue", alpha=0.5, label="Região Viável"
 #      )
 # Configuração do gráfico
-ax.set_xlim(-2, 10)
-ax.set_ylim(-2, 10)
+ax.set_xlim(MINX, MAX_X)
+ax.set_ylim(MINY, MAX_Y)
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
 ax.legend()
