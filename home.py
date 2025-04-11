@@ -194,7 +194,7 @@ for point in extreme_points:
      if point[0] == MAX_X or point[1] == MAX_Y:
           continue
      ax.scatter(*point, color="black", zorder=3)
-     ax.text(point[0], point[1], f"({get_point(point[0])}, {get_point(point[1])})", fontsize=9)
+     ax.text(point[0], point[1], f"({get_point(point[0])}, {get_point(point[1])})", fontsize=10,zorder=3)
      
 # Garantir que os pontos extremos estão formatados como um array numpy
 extreme_points = np.array(extreme_points)
