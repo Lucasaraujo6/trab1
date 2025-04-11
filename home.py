@@ -238,3 +238,16 @@ ax.set_ylabel("Y")
 ax.legend()
 ax.grid(True)
 st.pyplot(fig)
+
+import streamlit as st
+
+st.markdown("""
+<link rel="manifest" href="manifest.json">
+<script>
+if ('serviceWorker' in navigator) {
+     navigator.serviceWorker.register('/service-worker.js')
+     .then(() => console.log('Service Worker registrado!'))
+     .catch((error) => console.error('Erro ao registrar o Service Worker:', error));
+}
+</script>
+""", unsafe_allow_html=True)
