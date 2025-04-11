@@ -62,7 +62,7 @@ function += f"{'+' if state.x else ''} {state.y} y" if state.y else ''
 st.write(f"**Função Objetivo:** {state.opt} {function}")
 st.number_input(
      label="Quantidade de restrições:",
-     step=1, value=6, min_value=1,
+     step=1, value=3, min_value=1,
      key="set_const", on_change=set_const
 )
 
