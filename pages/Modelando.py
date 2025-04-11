@@ -51,10 +51,10 @@ st.subheader("Declare aqui sua função objetivo e suas variáveis")
 # Exibição do DataFrame editável
 fo = st.columns([5,2,2,2,2,2,2])
 fo[0].selectbox('Função Objetivo:',['Maximizar', 'Minimizar'], key='opt')
-fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal')
+fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal', disabled=True)
 fo[2].number_input(key='x',label='x',label_visibility='hidden', min_value=0)
 fo[3].text_input('X', label_visibility='hidden',value='X', disabled=True)
-fo[4].selectbox('F:',['+', '-'],label_visibility='hidden', key='y_signal')
+fo[4].selectbox('F:',['+', '-'],label_visibility='hidden', key='y_signal', disabled=True)
 fo[5].number_input(key='y',label='y',label_visibility='hidden', min_value=0)
 fo[6].text_input('Y', label_visibility='hidden',value='Y', disabled=True )
 function = f"{state.x_signal} {state.x} x " if state.x else ''
@@ -87,7 +87,7 @@ st.title("Resolução Gráfica de Problemas Lineares")
 
 # Criar o gráfico
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.quiver(0, 0, state.x, state.y, color="orange", scale=5, label=f"Vetor Gradiente FO: {function}")
+ax.quiver(0, 0, state.x, state.y, color="orange", scale=5, label=f"Gradiente da FO: {function}")
 
 # Criar uma grade de valores
 x = np.linspace(-10, 10, 200)
@@ -227,8 +227,7 @@ if optimal_point is not None:
      line_x = optimal_point[0] + t_values * perpendicular_direction[0]
      line_y = optimal_point[1] + t_values * perpendicular_direction[1]
      
-     # Traçar a linha perpendicular
-     
+    
      # Tornar o ponto maior e mais destacado
      ax.scatter(*optimal_point, color="red", edgecolor="black", zorder=3, label=f"Ponto {'Máximo' if state.opt == 'Maximizar' else 'Mínimo'}")
      ax.plot(line_x, line_y, color="gray", linestyle="dashed", label = 'Perpendicular do grad no ótimo')
