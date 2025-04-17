@@ -6,24 +6,8 @@ from scipy.spatial import ConvexHull
 
 
 state = st.session_state
-MINX = MINY = -0.5
+MIN_X = MIN_Y = -0.5
 MAX_X = MAX_Y = 5
-
-if "df" not in state:
-     # df = pd.DataFrame({
-     # 'X': [*[0]*(9)],
-     # 'Y': [*[0]*(9)],
-     # 'Sinal': [*['>=']*(9)],
-     # 'Valor': [*[0]*(9)]
-     # })
-     # Criando o DataFrame com as restrições
-     df = pd.DataFrame({
-          'X': [ 1, -5, 3],  # Coeficientes de x
-          'Y': [ 2, 5, 5],   # Coeficientes de y
-          'Sinal': ['>=', '<=', '>='],  
-          'Valor': [1,-10, 15] # Valores das restrições
-     })
-     state.df = df
 
 def set_const():
      qnt_constraints = state.set_const # Pegamos o valor atualizado
@@ -46,17 +30,57 @@ def set_const():
           df = pd.concat([df, new_rows], ignore_index=True)
           state.df = df
 
+def intersection(a1, b1, c1, a2, b2, c2, xlim=(-2, 10), ylim=(-2, 10)):
+     A = np.array([[a1, b1], [a2, b2]])
+     B = np.array([c1, c2])
+     try:
+          ponto = np.linalg.solve(A, B)
+          ponto = np.where(np.abs(ponto) < 1e-10, 0, ponto)  # Substituir valores próximos de 0 por 0
+          
+          
+          # Verificar se o ponto está dentro dos limites
+          if MIN_X <= ponto[0] <= MAX_X and MIN_Y <= ponto[1] <= MAX_Y:
+               return ponto
+          else:
+               return None  # Ignorar pontos fora do intervalo
+     except np.linalg.LinAlgError:
+          return None
+
+def get_point(point):
+     # Se a parte decimal é insignificante, retornar como inteiro
+     if abs(point - round(point)) < 1e-5:
+          return int(point)
+
+     # Arredondar para duas casas decimais inicialmente
+     rounded = round(point, 2)
+
+     # Verificar se é uma dízima periódica ou um número significativo
+     first_decimal = int(abs(rounded * 10) % 10)  # Primeira casa decimal
+     second_decimal = int(abs(rounded * 100) % 10)  # Segunda casa decimal
+
+     # Se apenas a primeira casa decimal é significativa, retornar uma casa
+     if second_decimal == 0:
+          return round(point, 1)
+
+     # Caso contrário, retornar com duas casas decimais
+     return rounded
+
+if "df" not in state:
+     df = pd.DataFrame({
+          'X': [ 1, -5, 3],  # Coeficientes de x
+          'Y': [ 2, 5, 5],   # Coeficientes de y
+          'Sinal': ['>=', '<=', '>='],  
+          'Valor': [1,-10, 15] # Valores das restrições
+     })
+     state.df = df
+
 st.subheader("Declare aqui sua função objetivo e suas variáveis")
 
 # Exibição do DataFrame editável
 fo = st.columns([5,2,2])
 fo[0].selectbox('Objetivo:',['Minimizar', 'Maximizar'], key='opt')
-# fo[1].selectbox('F:',['+', '-'],label_visibility='hidden', key='x_signal', disabled=True)
 fo[1].number_input(key='x',label='Multiplicador do x', min_value=0, value = 1)
-# fo[3].text_input('X', label_visibility='hidden',value='X', disabled=True)
-# fo[4].selectbox('F:',['+', '-'],label_visibility='hidden', key='y_signal', disabled=True)
 fo[2].number_input(key='y',label='Multiplicador do y', min_value=0, value = 1)
-# fo[6].text_input('Y', label_visibility='hidden',value='Y', disabled=True )
 function = f"{state.x} x " if state.x else ''
 function += f"{'+' if state.x else ''} {state.y} y" if state.y else ''
 st.write(f"**Função Objetivo:** {state.opt} {function}")
@@ -68,33 +92,30 @@ st.number_input(
 
 state.tempdf = st.data_editor(state.df, hide_index=True)
 
-def intersection(a1, b1, c1, a2, b2, c2, xlim=(-2, 10), ylim=(-2, 10)):
-     A = np.array([[a1, b1], [a2, b2]])
-     B = np.array([c1, c2])
-     try:
-          ponto = np.linalg.solve(A, B)
-          ponto = np.where(np.abs(ponto) < 1e-10, 0, ponto)  # Substituir valores próximos de 0 por 0
-          
-          # Verificar se o ponto está dentro dos limites
-          if xlim[0] <= ponto[0] <= xlim[1] and ylim[0] <= ponto[1] <= ylim[1]:
-               return ponto
-          else:
-               return None  # Ignorar pontos fora do intervalo
-     except np.linalg.LinAlgError:
-          return None
-
 st.subheader("Resolução Gráfica do Problema Linear")
 
 # Criar o gráfico
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.quiver(0, 0, state.x*100, state.y*100, color="orange", scale=5, label=f"Gradiente da FO: {function}")
 
-# Criar uma grade de valores
-x = np.linspace(-10, 10, 200)
-y = np.linspace(-10, 10, 200)
+df = state.tempdf.copy()
 
 # Plotar as restrições
-df = state.tempdf.copy()
+intersection_points = []
+for i in range(len(df)):
+     if df.iloc[i]["Y"] != 0:  # Evitar divisão por zero
+          MAX_Y = max(df.iloc[i]["Valor"] / df.iloc[i]["Y"] + 2, MAX_Y)
+     if df.iloc[i]["X"] != 0:  # Evitar divisão por zero
+          MAX_X = max(df.iloc[i]["Valor"] / df.iloc[i]["X"] + 2, MAX_X)
+     for j in range(i + 1, len(df)):
+          point = intersection(df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], 
+                              df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
+          if point is not None:
+               intersection_points.append(point)
+# Criar uma grade de valores
+x = np.linspace(-10, MAX_X, 200)
+y = np.linspace(-10, MAX_Y, 200)
+
 
 cores = ['b', 'g', 'r', 'c', 'm']
 
@@ -120,17 +141,7 @@ for i, row in df.iloc[:len(df)].iterrows():
                          label=f"{row['X']}x + {row['Y']}y = {row['Valor']}")
                
 # # Encontrar pontos de interseção para determinar os pontos extremos
-intersection_points = []
-for i in range(len(df)):
-     if df.iloc[i]["Y"] != 0:  # Evitar divisão por zero
-          MAX_Y = max(df.iloc[i]["Valor"] / df.iloc[i]["Y"] + 2, MAX_Y)
-     if df.iloc[i]["X"] != 0:  # Evitar divisão por zero
-          MAX_X = max(df.iloc[i]["Valor"] / df.iloc[i]["X"] + 2, MAX_X)
-     for j in range(i + 1, len(df)):
-          point = intersection(df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], 
-                              df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
-          if point is not None:
-               intersection_points.append(point)
+
 
 new_rows = pd.DataFrame({
      'X': [1, 0, 1, 0],
@@ -140,14 +151,17 @@ new_rows = pd.DataFrame({
 })
 
 df = pd.concat([df, new_rows], ignore_index=True)
-for i in range(len(df)-4,len(df)):
-     
+# print(df)
+
+for i in range(len(df)):
      for j in range(len(df)):
           point = intersection(df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], 
                               df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
+          # print(point, '\n', df.iloc[i]["X"], df.iloc[i]["Y"], df.iloc[i]["Valor"], '\n',
+          #                     df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
           if point is not None:
                intersection_points.append(point)
-               
+
 extreme_points = []
 for point in intersection_points:
      feasible = True  # Inicializamos a viabilidade como verdadeira para cada ponto
@@ -169,25 +183,6 @@ for point in intersection_points:
      # Apenas adicionamos o ponto se ele for viável
      if feasible:
           extreme_points.append(point)
-     
-def get_point(point):
-     # Se a parte decimal é insignificante, retornar como inteiro
-     if abs(point - round(point)) < 1e-5:
-          return int(point)
-
-     # Arredondar para duas casas decimais inicialmente
-     rounded = round(point, 2)
-
-     # Verificar se é uma dízima periódica ou um número significativo
-     first_decimal = int(abs(rounded * 10) % 10)  # Primeira casa decimal
-     second_decimal = int(abs(rounded * 100) % 10)  # Segunda casa decimal
-
-     # Se apenas a primeira casa decimal é significativa, retornar uma casa
-     if second_decimal == 0:
-          return round(point, 1)
-
-     # Caso contrário, retornar com duas casas decimais
-     return rounded
 
 # # Plotar pontos extremos
 for point in extreme_points:
@@ -228,11 +223,11 @@ if optimal_point is not None:
      line_y = optimal_point[1] + t_values * perpendicular_direction[1]
      
      
-     ax.scatter(*optimal_point, color="red", edgecolor="black",s=100, zorder=3, label=f"Ponto {'Máximo' if state.opt == 'Maximizar' else 'Mínimo'}")
+     ax.scatter(*optimal_point, color="red", edgecolor="black",s=100, zorder=3, label=f"Ponto {'Máximo' if state.opt == 'Maximizar' else 'Mínimo'}: {optimal_point.tolist()}")
      ax.plot(line_x, line_y, color="gray", linestyle="dashed", label = 'Perpendicular do grad no ótimo')
           
-ax.set_xlim(MINX, MAX_X)
-ax.set_ylim(MINY, MAX_Y)
+ax.set_xlim(MIN_X, MAX_X)
+ax.set_ylim(MIN_Y, MAX_Y)
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
 ax.legend()
