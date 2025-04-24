@@ -30,7 +30,7 @@ def set_const():
           df = pd.concat([df, new_rows], ignore_index=True)
           state.df = df
 
-def intersection(a1, b1, c1, a2, b2, c2, xlim=(-2, 10), ylim=(-2, 10)):
+def intersection(a1, b1, c1, a2, b2, c2):
      A = np.array([[a1, b1], [a2, b2]])
      B = np.array([c1, c2])
      try:
@@ -112,6 +112,7 @@ for i in range(len(df)):
                               df.iloc[j]["X"], df.iloc[j]["Y"], df.iloc[j]["Valor"])
           if point is not None:
                intersection_points.append(point)
+               
 # Criar uma grade de valores
 x = np.linspace(-10, MAX_X, 200)
 y = np.linspace(-10, MAX_Y, 200)
@@ -151,7 +152,6 @@ new_rows = pd.DataFrame({
 })
 
 df = pd.concat([df, new_rows], ignore_index=True)
-# print(df)
 
 for i in range(len(df)):
      for j in range(len(df)):
@@ -233,16 +233,3 @@ ax.set_ylabel("Y")
 ax.legend()
 ax.grid(True)
 st.pyplot(fig)
-
-import streamlit as st
-
-st.markdown("""
-<link rel="manifest" href="manifest.json">
-<script>
-if ('serviceWorker' in navigator) {
-     navigator.serviceWorker.register('/service-worker.js')
-     .then(() => console.log('Service Worker registrado!'))
-     .catch((error) => console.error('Erro ao registrar o Service Worker:', error));
-}
-</script>
-""", unsafe_allow_html=True)
