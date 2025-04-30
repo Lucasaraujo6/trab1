@@ -169,7 +169,7 @@ for i, row in df.iterrows():
           else:
                label = f"{a}x + {b}y + {c}z ? {d}"
 
-          ax.plot_surface(X_grid, Y_grid, Z_grid, alpha=0.2, color=color, label=label)
+          # ax.plot_surface(X_grid, Y_grid, Z_grid, alpha=0.2, color=color, label=label)
                
 # # Encontrar pontos de interseção para determinar os pontos extremos
 
@@ -286,6 +286,9 @@ ax.set_zlim(MIN_Z, MAX_Z)
 ax.set_xlabel("X")
 ax.set_ylabel("Y")
 ax.set_zlabel("Z")
+ax.invert_yaxis()
+ax.invert_xaxis()
+
 ax.legend()
 ax.grid(True)
 st.pyplot(fig)

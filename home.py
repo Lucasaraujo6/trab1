@@ -67,10 +67,10 @@ def get_point(point):
 
 if "df" not in state:
      df = pd.DataFrame({
-          'X': [ 1, -5, 3],  # Coeficientes de x
-          'Y': [ 2, 5, 5],   # Coeficientes de y
+          'X': [ 1.0, -5.0, 3.0],  # Coeficientes de x
+          'Y': [ 2.0, 5.0, 5.0],   # Coeficientes de y
           'Sinal': ['>=', '<=', '>='],  
-          'Valor': [1,-10, 15] # Valores das restrições
+          'Valor': [1.0,-10.0, 15.0] # Valores das restrições
      })
      state.df = df
 
@@ -79,14 +79,14 @@ st.subheader("Declare aqui sua função objetivo e suas variáveis")
 # Exibição do DataFrame editável
 fo = st.columns([5,2,2])
 fo[0].selectbox('Objetivo:',['Minimizar', 'Maximizar'], key='opt')
-fo[1].number_input(key='x',label='Multiplicador do x', min_value=0, value = 1)
-fo[2].number_input(key='y',label='Multiplicador do y', min_value=0, value = 1)
+fo[1].number_input(key='x',label='Multiplicador do x', min_value=0.0, value = 1.0)
+fo[2].number_input(key='y',label='Multiplicador do y', min_value=0.0, value = 1.0)
 function = f"{state.x} x " if state.x else ''
 function += f"{'+' if state.x else ''} {state.y} y" if state.y else ''
 st.write(f"**Função Objetivo:** {state.opt} {function}")
 st.number_input(
      label="Quantidade de restrições:",
-     step=1, value=3, min_value=1,
+     step=0.1, value=3.0, min_value=1.0,
      key="set_const", on_change=set_const
 )
 
@@ -145,10 +145,10 @@ for i, row in df.iloc[:len(df)].iterrows():
 
 
 new_rows = pd.DataFrame({
-     'X': [1, 0, 1, 0],
-     'Y': [0, 1, 0, 1],
+     'X': [1.0, 0.0, 1.0, 0.0],
+     'Y': [0.0, 1.0, 0.0, 1.0],
      'Sinal': ['>=','>=','<=','<='],
-     'Valor': [0, 0, MAX_X, MAX_Y]
+     'Valor': [0.0, 0.0, MAX_X, MAX_Y]
 })
 
 df = pd.concat([df, new_rows], ignore_index=True)
@@ -208,7 +208,7 @@ optimal_point = None
 optimal_value = float('-inf') if state.opt == 'Maximizar' else float('inf')  # Inicialização adaptada
 
 for vertex in extreme_points:
-     objective_value = int(f'{state.x}') * vertex[0] + int(f'{state.y}') * vertex[1]
+     objective_value = float(f'{state.x}') * vertex[0] + float(f'{state.y}') * vertex[1]
      
      # Condição para Maximizar ou Minimizar
      if (state.opt == 'Maximizar' and objective_value > optimal_value) or (state.opt == 'Minimizar' and objective_value < optimal_value):
